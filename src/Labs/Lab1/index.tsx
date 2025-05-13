@@ -265,8 +265,8 @@ export default function Lab1() {
           to get dummy text<br/>
 
           Please
-          <a href="https://www.lipsum.com" id="wd-github"> click here </a>
-          to get go to the Github code repo COME BACK TO THIS ONCE THE REPO IS UP<br/>
+          <a href="https://github.com/sewardwi/kambaz-react-web-app" id="wd-github"> click here </a>
+          to get go to the Github code repo<br/>
 
         </form>
       </div>
