@@ -1,6 +1,11 @@
 import Nav from "react-bootstrap/Nav";
 import { Link, useLocation } from "react-router-dom";
 export default function TOC() {
+  /*
+  I had this code for using location from before as something I figured out.
+  It is not the same as what is in the textbook but it is functionally equivalent.
+  */
+ 
   const location = useLocation();
   const path = location.pathname;
 

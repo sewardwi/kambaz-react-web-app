@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Form, InputGroup, ListGroup } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs";
 import { CiSearch } from "react-icons/ci";
@@ -5,8 +6,13 @@ import { FaPlus } from "react-icons/fa";
 import AssignmentsControlButtons from "./AssignmentsControlButtons";
 import LessonControlButtons from "../Modules/LessonControlButtons";
 import { LuClipboardPenLine } from "react-icons/lu";
+import * as db from "../../Database";
+import { useParams } from "react-router-dom";
 
 export default function Assignments() {
+  const { cid } = useParams();
+  const assignments = db.assignments;
+
   return (
     <div id="wd-assignments">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -37,6 +43,42 @@ export default function Assignments() {
       </div>
 
       <ListGroup className="rounded-0" id="wd-assignments">
+        <ListGroup.Item className="wd-assignments-title p-0 mb-5 fs-5 border-gray">
+          <div className="wd-title p-3 ps-2 bg-secondary"> 
+            <BsGripVertical className="me-2 fs-3" />ASSIGNMENTS <AssignmentsControlButtons />
+          </div>
+          {assignments
+            .filter((assignment: any) => assignment.course === cid)
+            .map((assignment: any) => (
+              <ListGroup.Item className="wd-assignment-list-item p-3 ps-1 d-flex align-items-center" key={assignment.id}>
+                <BsGripVertical className="me-2 fs-3" />
+                <LuClipboardPenLine className="mx-3 fs-2 text-success" />
+                <div className="flex-grow-1">
+                  <h2>
+                    <b>
+                      <a href={`#/Kambaz/Courses/${cid}/Assignments/${assignment._id}`}
+                        className="wd-assignment-link text-reset text-decoration-none">
+                        {assignment.title}
+                      </a>
+                    </b>
+                  </h2>
+                  <span className="wd-assignment-list-item-details">
+                    Multiple Modules | 
+                    <b>Not available until</b> {assignment.available} |<br />
+                    <b>Due</b> {assignment.due} | {assignment.points} pts
+                  </span>
+                </div>
+                <LessonControlButtons />
+              </ListGroup.Item>
+            ))
+          }
+        </ListGroup.Item>
+      </ListGroup>
+    </div>
+);}
+
+
+{/* <ListGroup className="rounded-0" id="wd-assignments">
         <ListGroup.Item className="wd-assignments-title p-0 mb-5 fs-5 border-gray">
           <div className="wd-title p-3 ps-2 bg-secondary"> 
             <BsGripVertical className="me-2 fs-3" />ASSIGNMENTS <AssignmentsControlButtons /></div>
@@ -99,10 +141,7 @@ export default function Assignments() {
             </ListGroup.Item>
           </ListGroup>
         </ListGroup.Item>
-      </ListGroup>
-    </div>
-);}
-
+      </ListGroup> */}
 
 // export default function Assignments() {
 //   return (

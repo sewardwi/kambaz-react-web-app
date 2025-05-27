@@ -1,6 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Col, Form, Row } from "react-bootstrap";
+import { useParams } from "react-router-dom";
+import * as db from "../../Database";
 
 export default function AssignmentEditor() {
+  const { cid, aid } = useParams();
+  const assignments = db.assignments;
+  const assignment = assignments.find((a: any) => a._id === aid && a.course === cid);
+
   return (
     <div id="wd-assignments-editor">
       <label htmlFor="wd-name"><h4>Assignment Name</h4></label><br />
@@ -8,13 +15,13 @@ export default function AssignmentEditor() {
         <Form.Control as="textarea" 
                       id="wd-name" 
                       style={{ height: "20px" }} 
-                      defaultValue="A1 - ENV + HTML"
+                      defaultValue={assignment ? assignment.title : ""}
         />
         <br />
         <Form.Control as="textarea"
                       id="wd-description"
                       style={{ height: "100px" }}
-                      defaultValue="The assignment is available online Submit a link to the landing page of"
+                      defaultValue={assignment ? assignment.description : ""}
         />
         <br />
         <Form.Group as={Row} className="wd-points mb-3">
@@ -24,7 +31,7 @@ export default function AssignmentEditor() {
           <Col sm={10}>
             <Form.Control type="number" 
                           id="wd-points" 
-                          defaultValue={100} 
+                          defaultValue={assignment ? assignment.points : 0} 
                           min={0} 
                           max={100} 
                           step={1}
@@ -110,20 +117,20 @@ export default function AssignmentEditor() {
             <h6><b>Due</b></h6>
             <Form.Control type="datetime-local" 
                           id="wd-due-date" 
-                          defaultValue="2025-05-13T23:59" />
+                          defaultValue={assignment ? assignment.dueDateTime : ""} />
             <br />
             <Row>
               <Col>
                 <h6><b>Available From</b></h6>
                 <Form.Control type="datetime-local" 
                               id="wd-available-from" 
-                              defaultValue="2025-05-06T00:00" />
+                              defaultValue={assignment ? assignment.availableDateTime : ""} />
               </Col>
               <Col>
                 <h6><b>Until</b></h6>
                 <Form.Control type="datetime-local" 
                               id="wd-available-to" 
-                              defaultValue="2025-05-20T23:59" />
+                              defaultValue={assignment ? assignment.dueDateTime : ""} />
               </Col>
             </Row>
           </Col>
