@@ -2,16 +2,35 @@
 import { Button, Form, InputGroup, ListGroup } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs";
 import { CiSearch } from "react-icons/ci";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaTrash } from "react-icons/fa";
 import AssignmentsControlButtons from "./AssignmentsControlButtons";
 import LessonControlButtons from "../Modules/LessonControlButtons";
 import { LuClipboardPenLine } from "react-icons/lu";
-import * as db from "../../Database";
-import { useParams } from "react-router-dom";
+// import * as db from "../../Database";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";  // useDispatch
+import { useState } from "react";
+import AssignmentDelete from "./AssignmentDelete";
+// import { addAssignment, deleteAssignment, updateAssignment } from "./reducer";
 
 export default function Assignments() {
   const { cid } = useParams();
-  const assignments = db.assignments;
+  // const assignments = db.assignments;
+  const { assignments } = useSelector((state: any) => state.assignmentReducer);
+  // const dispatch = useDispatch();
+
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
+  const isFaculty = currentUser.role == "FACULTY";
+
+  const navigate = useNavigate();
+
+  const [showDelete, setShowDelete] = useState(false);
+  const handleClose = () => setShowDelete(false);
+  const [aidToDelete, setAidToDelete] = useState("");
+  const handleShow = (aidToDelete: string) => {
+    setAidToDelete(aidToDelete);
+    setShowDelete(true);
+  };
 
   return (
     <div id="wd-assignments">
@@ -30,8 +49,10 @@ export default function Assignments() {
             />
           </InputGroup>
         </div>
+        {isFaculty &&
         <div>
-          <Button variant="danger" size="lg" className="me-1 float-end" id="wd-add-assignment">
+          <Button variant="danger" size="lg" className="me-1 float-end" id="wd-add-assignment"
+            onClick={() => navigate(`/Kambaz/Courses/${cid}/Assignments/new`)}>
             <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
             Assignment 
           </Button>
@@ -40,6 +61,7 @@ export default function Assignments() {
             Group 
           </Button>
         </div>
+        }
       </div>
 
       <ListGroup className="rounded-0" id="wd-assignments">
@@ -64,16 +86,28 @@ export default function Assignments() {
                   </h2>
                   <span className="wd-assignment-list-item-details">
                     Multiple Modules | 
-                    <b>Not available until</b> {assignment.available} |<br />
+                    <b> Not available until</b> {assignment.available} |<br />
                     <b>Due</b> {assignment.due} | {assignment.points} pts
                   </span>
                 </div>
-                <LessonControlButtons />
+                {isFaculty && 
+                <div>
+                  <FaTrash className="text-danger me-2 mb-1" 
+                    onClick={() => handleShow(assignment._id)}
+                  />
+                  <LessonControlButtons />
+                </div>
+                }
               </ListGroup.Item>
             ))
           }
         </ListGroup.Item>
       </ListGroup>
+
+      <AssignmentDelete show={showDelete} 
+        handleClose={handleClose}
+        aidToDelete={aidToDelete}
+      />
     </div>
 );}
 
