@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Form, InputGroup, ListGroup } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs";
@@ -8,16 +9,19 @@ import LessonControlButtons from "../Modules/LessonControlButtons";
 import { LuClipboardPenLine } from "react-icons/lu";
 // import * as db from "../../Database";
 import { useNavigate, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";  // useDispatch
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";  // useDispatch
+import { useState, useEffect } from "react";
 import AssignmentDelete from "./AssignmentDelete";
 // import { addAssignment, deleteAssignment, updateAssignment } from "./reducer";
+// import * as assignmentsClient from "./client";
+import * as coursesClient from "../client";
+import { setAssignments } from "./reducer";
 
 export default function Assignments() {
   const { cid } = useParams();
   // const assignments = db.assignments;
   const { assignments } = useSelector((state: any) => state.assignmentReducer);
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const isFaculty = currentUser.role == "FACULTY";
@@ -31,6 +35,14 @@ export default function Assignments() {
     setAidToDelete(aidToDelete);
     setShowDelete(true);
   };
+
+  const fetchAssignments = async () => {
+    const assignments = await coursesClient.findAssignmentsForCourse(cid as string);
+    dispatch(setAssignments(assignments));
+  };
+  useEffect(() => {
+    fetchAssignments();
+  }, []);
 
   return (
     <div id="wd-assignments">

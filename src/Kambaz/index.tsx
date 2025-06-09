@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Routes, Route, Navigate } from "react-router";
 import Account from "./Account";
@@ -6,18 +7,37 @@ import KambazNavigation from "./Navigation";
 import Courses from "./Courses";
 import "./styles.css";
 // import * as db from "./Database";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // import { v4 as uuidv4 } from "uuid";
 import ProtectedRoute from "./Account/ProtectedRoute";
 import { useDispatch, useSelector } from "react-redux";
-import { updateCourse } from "./Courses/reducer";
+import { updateCourse, setCourses } from "./Courses/reducer";
 import EnrollmentProtectedRoute from "./Dashboard/EnrollmentProtectedRoute";
+import Session from "./Account/Session";
+import * as userClient from "./Account/client";
+import * as courseClient from "./Courses/client";
 
 export default function Kambaz() {
+  // const [courses, setCourses] = useState<any[]>([]);
+  const { courses } = useSelector((state: any) => state.courseReducer);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
+  const fetchCourses = async () => {
+    try {
+      const courses = await userClient.findMyCourses();
+      dispatch(setCourses(courses));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    fetchCourses();
+  }, [currentUser]);
+
+
+  // const { currentUser } = useSelector((state: any) => state.accountReducer);
   const currentId = currentUser ? currentUser._id : "placeholder";
 
-  const { courses } = useSelector((state: any) => state.courseReducer);
+  // const { courses } = useSelector((state: any) => state.courseReducer);
   const dispatch = useDispatch();
 
   // const [courses, setCourses] = useState<any[]>(db.courses);
@@ -27,36 +47,49 @@ export default function Kambaz() {
     department: "placeholder", credits: 4, author: currentId
   });
 
+  const updateCourseHere = async () => {
+    await courseClient.updateCourse(course);
+    // setCourses(courses.map((c) => {
+    //     if (c._id === course._id) { return course; }
+    //     else { return c; }
+    // });
+    // );
+    dispatch(updateCourse(course));
+  };
 
   return (
-    <div id="wd-kambaz">
-      <KambazNavigation />
-      <div className="wd-main-content-offset p-3">
-        <Routes>
-          <Route path="/" element={<Navigate to="Account" />} />
-          <Route path="/Account/*" element={<Account />} />
-          <Route path="/Dashboard/*" element={
-            <ProtectedRoute>
-              <Dashboard
-                courses={courses}
-                course={course}
-                setCourse={setCourse}
-                // addNewCourse={() => dispatch(addCourse(course))}
-                updateCourse={() => dispatch(updateCourse(course))}/>
+    <Session>
+      <div id="wd-kambaz">
+        <KambazNavigation />
+        <div className="wd-main-content-offset p-3">
+          <Routes>
+            <Route path="/" element={<Navigate to="Account" />} />
+            <Route path="/Account/*" element={<Account />} />
+            <Route path="/Dashboard/*" element={
+              <ProtectedRoute>
+                <Dashboard
+                  courses={courses}
+                  course={course}
+                  setCourse={setCourse}
+                  // addNewCourse={() => dispatch(addCourse(course))}
+                  // updateCourse={() => dispatch(updateCourse(course))}
+                  updateCourse={updateCourseHere}
+                  fetchCourses={fetchCourses}/>
+                </ProtectedRoute>
+            } />
+            <Route path="/Courses/:cid/*" element={
+              <ProtectedRoute>
+                <EnrollmentProtectedRoute>
+                  <Courses courses={courses}/>
+                </EnrollmentProtectedRoute>
               </ProtectedRoute>
-          } />
-          <Route path="/Courses/:cid/*" element={
-            <ProtectedRoute>
-              <EnrollmentProtectedRoute>
-                <Courses courses={courses}/>
-              </EnrollmentProtectedRoute>
-            </ProtectedRoute>
-          } />
-          <Route path="/Calendar" element={<h1>Calendar</h1>} />
-          <Route path="/Inbox" element={<h1>Inbox</h1>} />
-        </Routes>
+            } />
+            <Route path="/Calendar" element={<h1>Calendar</h1>} />
+            <Route path="/Inbox" element={<h1>Inbox</h1>} />
+          </Routes>
+        </div>
       </div>
-    </div>
+    </Session>
 );}
 
 {/* <table width="100%">

@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addAssignment, updateAssignment } from "./reducer";
 import { useState } from "react";
+import * as assignmentsClient from "./client";
 
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
@@ -31,6 +32,16 @@ export default function AssignmentEditor() {
       minute: '2-digit',
       hour12: true
     }).replace(',', ' at');
+  }
+
+  const updateCreateAssignment = async (assignment: any) => {
+    if (aid === "new") {
+      const newAssignment = await assignmentsClient.createAssignment(assignment);
+      dispatch(addAssignment(newAssignment));
+    } else {
+      const updatedAssignment = await assignmentsClient.updateAssignment(assignment);
+      dispatch(updateAssignment(updatedAssignment));
+    }
   }
 
   return (
@@ -199,7 +210,7 @@ export default function AssignmentEditor() {
                     availableDateTime: formData.availableDateTime,
                     untilDateTime: formData.untilDateTime,
                   };
-                  dispatch(aid == "new" ? addAssignment(newAssignment) : updateAssignment(newAssignment));
+                  updateCreateAssignment(newAssignment);
                   navigate(`/Kambaz/Courses/${cid}/Assignments`);
                 }}
           >

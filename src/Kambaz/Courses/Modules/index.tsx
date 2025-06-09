@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FormControl, ListGroup } from "react-bootstrap";
 import ModulesControls from "./ModulesControls";
@@ -6,11 +7,13 @@ import LessonControlButtons from "./LessonControlButtons";
 import ModuleControlButtons from "./ModuleControlButtons";
 import { useParams } from "react-router-dom";
 // import * as db from "../../Database";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // import { v4 as uuidv4 } from "uuid";
-import { addModule, editModule, updateModule, deleteModule }
+import { setModules, addModule, editModule, updateModule, deleteModule }
   from "./reducer";
 import { useSelector, useDispatch } from "react-redux";
+import * as coursesClient from "../client";
+import * as modulesClient from "./client";
 
 export default function Modules() {
   // const { cid } = useParams();
@@ -41,20 +44,46 @@ export default function Modules() {
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const isFaculty = currentUser.role == "FACULTY";
 
+  const fetchModules = async () => {
+    const modules = await coursesClient.findModulesForCourse(cid as string);
+    dispatch(setModules(modules));
+  };
+  useEffect(() => {
+    fetchModules();
+  }, []);
+
+  const createModuleForCourse = async () => {
+    if (!cid) return;
+    const newModule = { name: moduleName, course: cid };
+    const module = await coursesClient.createModuleForCourse(cid, newModule);
+    dispatch(addModule(module));
+  };
+
+  const removeModule = async (moduleId: string) => {
+    await modulesClient.deleteModule(moduleId);
+    dispatch(deleteModule(moduleId));
+  };
+
+  const saveModule = async (module: any) => {
+    await modulesClient.updateModule(module);
+    dispatch(updateModule(module));
+  };
+
   return (
     <div>
       <ModulesControls 
         setModuleName={setModuleName} 
         moduleName={moduleName} 
-        addModule={() => {
-          dispatch(addModule({ name: moduleName, course: cid }));
-          setModuleName("");
-        }}
+        // addModule={() => {
+        //   dispatch(addModule({ name: moduleName, course: cid }));
+        //   setModuleName("");
+        // }}
+        addModule={createModuleForCourse}
       /><br /><br /><br /><br />
 
       <ListGroup id="wd-modules-list" className="wd list-group fs-5 rounded-0">
         {modules
-          .filter((module : any) => module.course === cid)
+          // .filter((module : any) => module.course === cid)
           .map((module: any) => (
             <ListGroup.Item className="wd-module p-0 mb-5 fs-5 border-gray" key={module.id}>
               <div className="wd-title p-3 ps-2 bg-secondary">
@@ -65,16 +94,18 @@ export default function Modules() {
                         onChange={(e) => dispatch(updateModule({ ...module, name: e.target.value }))}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            dispatch(updateModule({ ...module, editing: false }));
+                            // dispatch(updateModule({ ...module, editing: false }));
+                            saveModule({ ...module, editing: false });
                           }
                         }}
                         defaultValue={module.name}/>
                 )}
                 {isFaculty &&
                 <ModuleControlButtons moduleId={module._id}
-                  deleteModule={(moduleId) => {
-                    dispatch(deleteModule(moduleId));
-                  }}
+                  // deleteModule={(moduleId) => {
+                  //   dispatch(deleteModule(moduleId));
+                  // }}
+                  deleteModule={(moduleId) => removeModule(moduleId)}
                   editModule={(moduleId) => dispatch(editModule(moduleId))}/>
                 }
               </div>
